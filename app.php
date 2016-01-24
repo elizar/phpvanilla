@@ -22,9 +22,9 @@ class App
 
     function run($method, $path)
     {
-        $request_segments  = $this->createSegmentsFromPath($path);
-        $segments_count = count($request_segments);
-        $request_method = strtolower($method);
+        $request_segments = $this->createSegmentsFromPath($path);
+        $segments_count   = count($request_segments);
+        $request_method   = strtolower($method);
 
         // Set initial request params
         $params = [];
