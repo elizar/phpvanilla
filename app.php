@@ -3,11 +3,14 @@
 class App
 {
     private $routes = array();
-    public $notFoundHandler;
+    private $path_info;
+    private $request_method;
 
     function __construct()
     {
-        $this->notFoundHandler = [$this, 'defaultNotFoundHandler'];
+        // Todo: write some awesome shit in here!
+        $this->path_info      = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '/';
+        $this->request_method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'get';
     }
 
     function get($path, $handler)
@@ -20,16 +23,20 @@ class App
         return $this->addRoute('post', $path, $handler);
     }
 
-    function run($method, $path)
+    function run()
     {
-        $request_segments = $this->createSegmentsFromPath($path);
+        $request_segments = $this->createSegmentsFromPath($this->path_info);
         $segments_count   = count($request_segments);
-        $request_method   = strtolower($method);
+        $request_method   = strtolower($this->request_method);
 
         // Set initial request params
         $params = [];
         // Set initial notFound handler
-        $matched_handler = $this->notFoundHandler;
+        $matched_handler = [$this, 'defaultNotFoundHandler'];
+        if (isset($this->notFoundHandler) && is_callable($this->notFoundHandler)) {
+            // Override default not found handler
+            $matched_handler = $this->notFoundHandler;
+        }
 
         if (isset($this->routes[$request_method][$segments_count])) {
             $paths = $this->routes[$request_method][$segments_count];
@@ -51,17 +58,17 @@ class App
         return $matched_handler($params);
     }
 
-    /**
-     * -------------------------------------------------------------
-     * PRIVATE METHODS
-     * -------------------------------------------------------------
-     *
-     */
+    /***************************************************************
+     *                        PRIVATE METHODS
+     **************************************************************/
     private function defaultNotFoundHandler()
     {
-        echo 'Oh Snap! - We couldn\'t find what you\'re looking for';
-        echo '<br>';
-        echo 'click <a href="/" title="Home">here</a> to go back.';
+        http_response_code(404);
+        header('Content-Type: application/json');
+        $res = new stdClass();
+        $res->status = 404;
+        $res->message = 'Not Found';
+        echo json_encode($res);
     }
 
     /*
