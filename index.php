@@ -11,9 +11,8 @@ $app = new App();
 // };
 
 
-$app // Adds routes
+$app
     ->get('/sayhi/:name', function ($params) {
         echo 'Hi, ' . $params['name'];
     })
-    // Run app
     ->run();
